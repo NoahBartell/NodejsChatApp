@@ -3,8 +3,8 @@ services:
   snake:
     image: 'noahbartell/node_chat_app'
     environment:
-      - "PORT:3000"
+      - "PORT:3700"
     ports:
-      - "80:3000"
+      - "80:3700"
     volumes:
       - ./:/app
