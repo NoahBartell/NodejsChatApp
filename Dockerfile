@@ -1,4 +1,4 @@
 FROM mhart/alpine-node
 COPY . /app
 CMD node /app/index.js
-EXPOSE 3000
+EXPOSE 3700
