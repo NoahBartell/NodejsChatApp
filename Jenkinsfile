@@ -11,6 +11,7 @@ node('AppServer2')
         snykSecurity(
           snykInstallation: 'Snyk@latest',
           snykTokenId: 'Snykid',
+        )
     }
     stage('Build and tag')
     {
