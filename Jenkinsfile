@@ -6,6 +6,12 @@ node('AppServer2')
         // Clone the repository
         checkout scm
     }
+    stage('SCA TEST')
+    {
+        snykSecurity(
+          snykInstallation: 'Snyk@latest',
+          snykTokenId: 'Snykid',
+    }
     stage('Build and tag')
     {
         app = docker.build("noahbartell/node_chat_app")
