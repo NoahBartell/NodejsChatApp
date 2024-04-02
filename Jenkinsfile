@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarQubeScanner'
-                    withSonarQubeEnv('SonarQube') {
+                    withSonarQubeEnv('SonarQubeCA') {
                         sh "${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=Chat-App \
                             -Dsonar.sources=."
