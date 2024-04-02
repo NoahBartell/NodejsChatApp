@@ -14,13 +14,7 @@ node('AppServer2')
           severity: 'high'
         )
     }
-    stage('SonarQube Analysis'){
-    def scannerHome = tool 'SonarQubeScanner';
-    withSonarQubeEnv('SonarQube')
-        {
-        sh "${scannerHome}/bin/sonar-scanner"
-        }
-    }
+
     stage('Build and tag')
     {
         app = docker.build("noahbartell/node_chat_app")
@@ -36,5 +30,16 @@ node('AppServer2')
     {
         sh 'docker-compose down'
         sh 'docker-compose up -d'
+    }
+}
+
+node('Sonarqube-Server-CWEB2140')
+{
+    stage('SonarQube Analysis'){
+    def scannerHome = tool 'SonarQubeScanner';
+    withSonarQubeEnv('SonarQube')
+        {
+        sh "${scannerHome}/bin/sonar-scanner"
+        }
     }
 }
