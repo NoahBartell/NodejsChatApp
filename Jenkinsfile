@@ -1,45 +1,78 @@
-node('AppServer2')
-{
-    def app
-    stage('Clone Git')
-    {
-        // Clone the repository
-        checkout scm
-    }
-    stage('SCA TEST')
-    {
-        snykSecurity(
-          snykInstallation: 'Snyk@latest',
-          snykTokenId: 'Snykid',
-          severity: 'high'
-        )
-    }
+pipeline {
+    agent none
+    
+    stages {
+        stage('CLONE GIT REPOSITORY') {
+            agent {
+                label 'AppServer2'
+            }
+            steps {
+                checkout scm
+            }
+        }  
 
-    stage('Build and tag')
-    {
-        app = docker.build("noahbartell/node_chat_app")
-    }
-    stage('Post to Docker Hub')
-    {
-        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_credentials')
-        {
-            app.push("latest")
+        stage('SCA-SAST-SNYK-TEST') {
+            agent any
+            steps {
+                script {
+                    snykSecurity(
+                        snykInstallation: 'Snyk',
+                        snykTokenId: 'Synkid',
+                        severity: 'critical'
+                    )
+                }
+            }
         }
-    }
-    stage('Pull and Deploy')
-    {
-        sh 'docker-compose down'
-        sh 'docker-compose up -d'
-    }
-}
 
-node('Sonarqube-Server-CWEB2140')
-{
-    stage('SonarQube Analysis'){
-    def scannerHome = tool 'SonarQubeScanner';
-    withSonarQubeEnv('SonarQube')
-        {
-        sh "${scannerHome}/bin/sonar-scanner"
+        stage('SonarQube Analysis') {
+            agent {
+                label 'Sonarqube-Server-CWEB2140'
+            }
+            steps {
+                script {
+                    def scannerHome = tool 'SonarQubeScanner'
+                    withSonarQubeEnv('sonarqube') {
+                        sh "${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=Chat-App \
+                            -Dsonar.sources=."
+                    }
+                }
+            }
+        }
+
+        stage('BUILD-AND-TAG') {
+            agent {
+                label 'AppServer2'
+            }
+            steps {
+                script {
+                    def app = docker.build("noahbartell/node_chat_app")
+                }
+            }
+        }
+
+        stage('POST-TO-DOCKERHUB') {    
+            agent {
+                label 'AppServer2'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_credentials') {
+                        def app = docker.build("noahbartell/node_chat_app")
+                        app.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage('DEPLOYMENT') {    
+            agent {
+                label 'AppServer2'
+            }
+            steps {
+                sh "docker-compose down"
+                sh "docker-compose up -d"   
+            }
         }
     }
 }
