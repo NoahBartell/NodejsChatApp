@@ -12,13 +12,11 @@ pipeline {
         }  
 
         stage('SCA-SAST-SNYK-TEST') {
-            agent {
-                label 'AppServer2'
-            }
+            agent any
             steps {
                 script {
                     snykSecurity(
-                        snykInstallation: 'Snyk',
+                        snykInstallation: 'Snyk@latest',
                         snykTokenId: 'Synkid',
                         severity: 'critical'
                     )
